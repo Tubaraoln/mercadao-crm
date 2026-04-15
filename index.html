@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0a0a0a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<title>Mercadão CRM</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--verde:#7DCC48;--verde-escuro:#27500A;--preto:#0a0a0a;--surface:#f8f8f8;--branco:#fff;--border:rgba(0,0,0,0.08);--text:#1a1a1a;--muted:#666;--radius:10px;--radius-lg:14px}
+body{font-family:'Barlow',sans-serif;background:var(--surface);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased}
+/* LOGIN */
+.login-page{min-height:100vh;background:var(--preto);display:flex;align-items:center;justify-content:center;padding:24px}
+.login-box{width:100%;max-width:380px}
+.login-logo{font-family:'Bebas Neue',sans-serif;font-size:40px;color:var(--verde);text-align:center;margin-bottom:4px}
+.login-sub{text-align:center;color:#555;font-size:13px;margin-bottom:32px}
+.login-card{background:#141414;border-radius:var(--radius-lg);padding:24px;border:1px solid #222}
+/* TOPBAR */
+.topbar{background:var(--preto);padding:14px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.topbar-logo{font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--verde);letter-spacing:1px}
+.topbar-sub{font-size:11px;color:#555;margin-top:1px}
+/* NAV */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--preto);border-top:1px solid #1e1e1e;z-index:100;padding-bottom:env(safe-area-inset-bottom)}
+.nav-row{display:flex}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 4px 6px;cursor:pointer;color:#555;font-size:10px;gap:3px;border:none;background:transparent;transition:color 0.15s;font-family:'Barlow',sans-serif}
+.nav-item.active{color:var(--verde)}
+.nav-item svg{width:18px;height:18px}
+/* CONTENT */
+.content{padding:16px;padding-bottom:90px}
+/* CARDS */
+.card{background:var(--branco);border-radius:var(--radius-lg);border:1px solid var(--border);padding:14px;margin-bottom:10px}
+/* METRICS */
+.metrics-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:16px}
+.metric-card{background:var(--branco);border-radius:var(--radius);padding:14px;border:1px solid var(--border)}
+.metric-label{font-size:11px;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em}
+.metric-val{font-size:22px;font-weight:600;color:var(--text)}
+.metric-val.green{color:var(--verde-escuro)}
+.metric-val.amber{color:#854F0B}
+.metric-val.blue{color:#185FA5}
+.metric-val.purple{color:#3C3489}
+/* BADGES */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:100px;font-size:11px;font-weight:600}
+.badge::before{content:'';width:6px;height:6px;border-radius:50%;display:inline-block}
+.badge.verde{background:#EAF3DE;color:#27500A}.badge.verde::before{background:#7DCC48}
+.badge.amber{background:#FAEEDA;color:#854F0B}.badge.amber::before{background:#EF9F27}
+.badge.red{background:#FCEBEB;color:#A32D2D}.badge.red::before{background:#E24B4A}
+.badge.blue{background:#E6F1FB;color:#185FA5}.badge.blue::before{background:#378ADD}
+.badge.purple{background:#EEEDFE;color:#3C3489}.badge.purple::before{background:#7F77DD}
+.badge.gray{background:#F1EFE8;color:#5F5E5A}.badge.gray::before{background:#888780}
+/* AVATAR */
+.avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex-shrink:0}
+/* BUTTONS */
+.btn{padding:10px 18px;border-radius:var(--radius);border:1px solid var(--border);background:var(--branco);color:var(--text);font-size:14px;font-family:'Barlow',sans-serif;font-weight:500;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:6px}
+.btn:active{opacity:.8;transform:scale(.98)}
+.btn-primary{background:var(--verde);border-color:var(--verde);color:#0a0a0a;font-weight:600}
+.btn-full{width:100%;justify-content:center}
+/* FAB */
+.fab{position:fixed;bottom:80px;right:16px;width:52px;height:52px;border-radius:50%;background:var(--verde);border:none;color:#0a0a0a;font-size:24px;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 12px rgba(125,204,72,.4);z-index:99;transition:transform .15s;font-weight:bold}
+.fab:active{transform:scale(.93)}
+/* FORM */
+.form-group{margin-bottom:14px}
+.form-label{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px;display:block}
+.form-input{width:100%;padding:11px 14px;border:1px solid var(--border);border-radius:var(--radius);font-size:15px;font-family:'Barlow',sans-serif;background:var(--branco);color:var(--text);outline:none;transition:border-color .15s}
+.form-input:focus{border-color:var(--verde)}
+.form-select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:36px}
+/* MODAL */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:flex;align-items:flex-end}
+.sheet{background:var(--branco);border-radius:20px 20px 0 0;padding:20px 16px;width:100%;max-height:90vh;overflow-y:auto;padding-bottom:calc(20px + env(safe-area-inset-bottom))}
+.sheet-handle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 16px}
+.sheet-title{font-size:17px;font-weight:600;margin-bottom:16px}
+/* CHIPS */
+.chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin-bottom:14px}
+.chips::-webkit-scrollbar{display:none}
+.chip{padding:6px 14px;border-radius:100px;border:1px solid var(--border);font-size:12px;font-family:'Barlow',sans-serif;cursor:pointer;white-space:nowrap;background:var(--branco);color:var(--muted);transition:all .15s}
+.chip.active{background:var(--preto);border-color:var(--preto);color:var(--verde)}
+/* PROGRESS */
+.progress-track{height:5px;background:#eee;border-radius:100px;overflow:hidden;margin:6px 0}
+.progress-fill{height:100%;border-radius:100px;transition:width .3s}
+/* MISC */
+.section-title{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px}
+.empty{text-align:center;padding:40px 20px;color:var(--muted);font-size:14px}
+.login-card .form-input{background:#1e1e1e;border-color:#333;color:#fff}
+.login-card .form-input:focus{border-color:var(--verde)}
+.login-card .form-label{color:#888}
+.login-error{color:#E24B4A;font-size:13px;text-align:center;margin-top:10px}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+const SUPABASE_URL = 'https://kvxdqocclilrrsgsoghi.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt2eGRxb2NjbGlscnJzZ3NvZ2hpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxOTc2MjAsImV4cCI6MjA5MTc3MzYyMH0.fXAlpBYhvpe0AG80TBvsfTMeD9HXzr-o1LEGqyxQ7qg';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// ===== STATE =====
+let user = null;
+let tab = 'anuncios';
+let modal = null;
+let dados = { contatos:[], anuncios:[], catalogo:[], consultor:[], transacoes:[] };
+
+// ===== UTILS =====
+const initials = n => n.split(' ').slice(0,2).map(x=>x[0]).join('').toUpperCase();
+const CORES = [{bg:'#E6F1FB',txt:'#185FA5'},{bg:'#EAF3DE',txt:'#27500A'},{bg:'#EEEDFE',txt:'#3C3489'},{bg:'#FAEEDA',txt:'#854F0B'},{bg:'#E1F5EE',txt:'#085041'},{bg:'#FCEBEB',txt:'#A32D2D'}];
+const corAv = n => CORES[n.charCodeAt(0) % CORES.length];
+const moeda = v => v ? `R$ ${Number(v).toLocaleString('pt-BR')}` : '—';
+const diasPassados = d => Math.floor((new Date()-new Date(d))/(1000*60*60*24));
+const stAnuncio = dias => dias>=7?{l:'Só no feed',c:'blue',fill:'#378ADD'}:dias>=6?{l:'Vence amanhã',c:'amber',fill:'#EF9F27'}:{l:'Ativo',c:'verde',fill:'#7DCC48'};
+
+// ===== RENDER ENGINE =====
+function r(id, html) { const el = document.getElementById(id); if(el) el.innerHTML = html; }
+function app() { document.getElementById('app').innerHTML = !user ? renderLogin() : renderApp(); bindEvents(); }
+
+// ===== LOGIN =====
+function renderLogin() {
+  return `<div class="login-page"><div class="login-box">
+    <div class="login-logo">MERCADÃO</div>
+    <div class="login-sub">CRM · Lagartense Mercadão</div>
+    <div class="login-card">
+      <div class="form-group"><label class="form-label">Email</label><input class="form-input" id="email" type="email" placeholder="seu@email.com"></div>
+      <div class="form-group"><label class="form-label">Senha</label><input class="form-input" id="senha" type="password" placeholder="••••••••"></div>
+      <button class="btn btn-primary btn-full" onclick="doLogin()">Entrar</button>
+      <div class="login-error" id="login-err"></div>
+    </div>
+  </div></div>`;
+}
+
+async function doLogin() {
+  const email = document.getElementById('email').value;
+  const senha = document.getElementById('senha').value;
+  const {error} = await sb.auth.signInWithPassword({email, password:senha});
+  if(error) { document.getElementById('login-err').textContent = 'Email ou senha incorretos.'; }
+}
+
+// ===== APP SHELL =====
+const TABS = [
+  {key:'contatos',label:'Contatos',icon:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>'},
+  {key:'anuncios',label:'Anúncios',icon:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>'},
+  {key:'catalogo',label:'Catálogo',icon:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>'},
+  {key:'consultor',label:'Consultor',icon:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>'},
+  {key:'recuperar',label:'Recuperar',icon:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.49"/></svg>'},
+  {key:'financeiro',label:'Financeiro',icon:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>'},
+];
+const TITLES = {contatos:'Contatos',anuncios:'Anúncios ativos',catalogo:'Catálogo de produtos',consultor:'Consultor',recuperar:'Recuperar clientes',financeiro:'Financeiro'};
+
+function renderApp() {
+  const nav1 = TABS.slice(0,3).map(t=>`<button class="nav-item ${tab===t.key?'active':''}" onclick="setTab('${t.key}')">${t.icon}<span>${t.label}</span></button>`).join('');
+  const nav2 = TABS.slice(3).map(t=>`<button class="nav-item ${tab===t.key?'active':''}" onclick="setTab('${t.key}')">${t.icon}<span>${t.label}</span></button>`).join('');
+  return `
+    <div class="topbar">
+      <div><div class="topbar-logo">MERCADÃO CRM</div><div class="topbar-sub">${TITLES[tab]}</div></div>
+      <button class="btn" style="font-size:12px;padding:6px 12px" onclick="doLogout()">Sair</button>
+    </div>
+    <div class="content" id="page-content">Carregando...</div>
+    <nav class="bottom-nav">
+      <div class="nav-row">${nav1}</div>
+      <div class="nav-row">${nav2}</div>
+    </nav>
+    ${modal||''}`;
+}
+
+async function setTab(t) { tab=t; app(); await loadPage(); }
+async function doLogout() { await sb.auth.signOut(); }
+
+// ===== PAGES =====
+async function loadPage() {
+  if(tab==='contatos') await loadContatos();
+  else if(tab==='anuncios') await loadAnuncios();
+  else if(tab==='catalogo') await loadCatalogo();
+  else if(tab==='consultor') await loadConsultor();
+  else if(tab==='recuperar') await loadRecuperar();
+  else if(tab==='financeiro') await loadFinanceiro();
+}
+
+// CONTATOS
+let filtroContatos='todos';
+async function loadContatos() {
+  const {data} = await sb.from('contatos').select('*').order('created_at',{ascending:false});
+  dados.contatos = data||[];
+  renderContatos();
+}
+function renderContatos() {
+  const lista = filtroContatos==='todos' ? dados.contatos : dados.contatos.filter(c=>c.status===filtroContatos);
+  const chips = ['todos','ativo','vip','lead','inativo'].map(f=>`<button class="chip ${filtroContatos===f?'active':''}" onclick="filtContatos('${f}')">${f==='todos'?'Todos ('+dados.contatos.length+')':({ativo:'Ativos',vip:'VIP',lead:'Leads',inativo:'Inativos'}[f])}</button>`).join('');
+  const STATUS = {ativo:'verde',vip:'purple',lead:'blue',inativo:'gray'};
+  const SL = {ativo:'Ativo',vip:'VIP',lead:'Lead',inativo:'Inativo'};
+  const cards = lista.length ? lista.map(c=>{const cor=corAv(c.nome);return`<div class="card">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+      <div class="avatar" style="background:${cor.bg};color:${cor.txt}">${initials(c.nome)}</div>
+      <div style="flex:1"><div style="font-weight:600;font-size:15px">${c.nome}</div><div style="font-size:12px;color:#888">${c.categoria||''}${c.bairro?' · '+c.bairro:''}</div></div>
+      <span class="badge ${STATUS[c.status]||'gray'}">${SL[c.status]||c.status}</span>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      ${c.telefone?`<span style="font-size:12px;color:#888">📞 ${c.telefone}</span>`:''}
+      ${c.observacoes?`<span style="font-size:12px;color:#888;font-style:italic">"${c.observacoes.substring(0,40)}"</span>`:''}
+    </div>
+    <div style="margin-top:10px;display:flex;gap:8px">
+      ${c.telefone?`<a href="https://wa.me/55${c.telefone.replace(/\D/g,'')}" target="_blank" class="btn btn-primary" style="font-size:12px;padding:6px 12px">WhatsApp</a>`:''}
+    </div>
+  </div>`;}).join('') : '<div class="empty">Nenhum contato</div>';
+  r('page-content', `<div class="chips">${chips}</div>${cards}<button class="fab" onclick="abrirFormContato()">+</button>`);
+}
+function filtContatos(f){filtroContatos=f;renderContatos();}
+function abrirFormContato(){
+  modal=`<div class="overlay" onclick="fecharModal()"><div class="sheet" onclick="event.stopPropagation()">
+    <div class="sheet-handle"></div><div class="sheet-title">Novo contato</div>
+    <div class="form-group"><label class="form-label">Nome *</label><input class="form-input" id="f-nome" placeholder="Nome completo"></div>
+    <div class="form-group"><label class="form-label">Telefone/WhatsApp</label><input class="form-input" id="f-tel" placeholder="(79) 99999-9999"></div>
+    <div class="form-group"><label class="form-label">Bairro</label><input class="form-input" id="f-bairro" placeholder="Bairro em Lagarto"></div>
+    <div class="form-group"><label class="form-label">Categoria</label><select class="form-input form-select" id="f-cat"><option value="">Selecione...</option><option>Eletrônico</option><option>Eletrodoméstico</option><option>Móveis</option><option>Veículo</option><option>Imóvel</option><option>Esporte</option><option>Outro</option></select></div>
+    <div class="form-group"><label class="form-label">Status</label><select class="form-input form-select" id="f-status"><option value="ativo">Ativo</option><option value="vip">VIP</option><option value="lead">Lead</option><option value="inativo">Inativo</option></select></div>
+    <div class="form-group"><label class="form-label">Observações</label><textarea class="form-input" id="f-obs" rows="2" style="resize:none" placeholder="Anotações..."></textarea></div>
+    <button class="btn btn-primary btn-full" onclick="salvarContato()">Salvar</button>
+  </div></div>`;
+  app();
+}
+async function salvarContato(){
+  const nome=document.getElementById('f-nome').value;
+  if(!nome.trim()) return;
+  await sb.from('contatos').insert([{nome,telefone:document.getElementById('f-tel').value,bairro:document.getElementById('f-bairro').value,categoria:document.getElementById('f-cat').value,status:document.getElementById('f-status').value,observacoes:document.getElementById('f-obs').value}]);
+  fecharModal(); await loadContatos();
+}
+
+// ANÚNCIOS
+let filtroAn='todos';
+async function loadAnuncios(){
+  const {data}=await sb.from('anuncios_view').select('*').order('dias_passados');
+  dados.anuncios=data||[];
+  renderAnuncios();
+}
+function renderAnuncios(){
+  const lista=filtroAn==='todos'?dados.anuncios:dados.anuncios.filter(a=>{const st=stAnuncio(a.dias_passados);return filtroAn==='feed'?a.dias_passados>=7:filtroAn==='vencendo'?a.dias_passados>=6&&a.dias_passados<7:a.dias_passados<6;});
+  const chips=['todos','ativo','vencendo','feed'].map(f=>`<button class="chip ${filtroAn===f?'active':''}" onclick="filtAn('${f}')">${{todos:'Todos ('+dados.anuncios.length+')',ativo:'Ativos',vencendo:'Vencem em breve',feed:'Só no feed'}[f]}</button>`).join('');
+  const cards=lista.length?lista.map(a=>{const st=stAnuncio(a.dias_passados);const pct=Math.min(100,Math.round((a.dias_passados/7)*100));const dt=a.dias_restantes===0?'Vence hoje':a.dias_restantes===1?'Vence amanhã':a.dias_passados>=7?'Stories vencidos':`${a.dias_restantes} dias restantes`;return`<div class="card">
+    <div style="display:flex;gap:12px;align-items:flex-start">
+      <div style="font-size:32px;line-height:1;flex-shrink:0">${a.emoji||'📦'}</div>
+      <div style="flex:1">
+        <div style="font-weight:600;font-size:15px;margin-bottom:2px">${a.produto}</div>
+        <div style="font-size:13px;color:#555;margin-bottom:2px">${a.contato_nome}</div>
+        ${a.preco?`<div style="font-size:15px;font-weight:600;color:#27500A">${moeda(a.preco)}</div>`:''}
+      </div>
+      <span class="badge ${st.c}">${st.l}</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:11px;color:#888;margin:8px 0 3px"><span>Stories (7 dias)</span><span>${dt}</span></div>
+    <div class="progress-track"><div class="progress-fill" style="width:${pct}%;background:${st.fill}"></div></div>
+    <div style="display:flex;gap:8px;margin-top:10px">
+      ${a.contato_telefone?`<a href="https://wa.me/55${a.contato_telefone.replace(/\D/g,'')}" target="_blank" class="btn btn-primary" style="font-size:12px;padding:6px 12px">Chamar</a>`:''}
+      <button class="btn" style="font-size:12px;padding:6px 12px" onclick="marcarVendido('${a.id}')">Marcar vendido</button>
+    </div>
+  </div>`;}).join(''):'<div class="empty">Nenhum anúncio ativo</div>';
+  r('page-content',`<div class="chips">${chips}</div>${cards}<button class="fab" onclick="abrirFormAnuncio()">+</button>`);
+}
+function filtAn(f){filtroAn=f;renderAnuncios();}
+async function marcarVendido(id){await sb.from('anuncios').update({status_feed:'vendido'}).eq('id',id);await loadAnuncios();}
+function abrirFormAnuncio(){
+  const opts=dados.contatos.map(c=>`<option value="${c.id}">${c.nome}</option>`).join('');
+  modal=`<div class="overlay" onclick="fecharModal()"><div class="sheet" onclick="event.stopPropagation()">
+    <div class="sheet-handle"></div><div class="sheet-title">Novo anúncio</div>
+    <div class="form-group"><label class="form-label">Anunciante</label><select class="form-input form-select" id="fa-contato"><option value="">Selecione...</option>${opts}</select></div>
+    <div class="form-group"><label class="form-label">Produto *</label><input class="form-input" id="fa-prod" placeholder="Ex: Moto Fan 160"></div>
+    <div class="form-group"><label class="form-label">Preço (R$)</label><input class="form-input" id="fa-preco" type="number" placeholder="0,00"></div>
+    <div class="form-group"><label class="form-label">Data de início</label><input class="form-input" id="fa-data" type="date" value="${new Date().toISOString().split('T')[0]}"></div>
+    <div class="form-group"><label class="form-label">Emoji</label><div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:4px" id="emoji-picker">${['📱','💻','📺','🧊','🍳','🛋️','🛏️','🚗','🏍️','🚲','🏡','🎮','📦'].map(e=>`<button onclick="pickEmoji('${e}',this)" style="font-size:22px;padding:6px;border:2px solid #eee;border-radius:8px;background:#fff;cursor:pointer">${e}</button>`).join('')}</div></div>
+    <input type="hidden" id="fa-emoji" value="📦">
+    <button class="btn btn-primary btn-full" onclick="salvarAnuncio()">Salvar</button>
+  </div></div>`;
+  app();
+}
+function pickEmoji(e,btn){document.getElementById('fa-emoji').value=e;document.querySelectorAll('#emoji-picker button').forEach(b=>b.style.borderColor='#eee');btn.style.borderColor='#7DCC48';}
+async function salvarAnuncio(){
+  const prod=document.getElementById('fa-prod').value;
+  if(!prod.trim()) return;
+  await sb.from('anuncios').insert([{contato_id:document.getElementById('fa-contato').value||null,produto:prod,preco:parseFloat(document.getElementById('fa-preco').value)||null,data_inicio:document.getElementById('fa-data').value,emoji:document.getElementById('fa-emoji').value}]);
+  fecharModal(); await loadAnuncios();
+}
+
+// CATÁLOGO
+let filtroCat='Todos';
+async function loadCatalogo(){
+  const {data}=await sb.from('catalogo').select('*,contatos(nome,telefone)').order('created_at',{ascending:false});
+  dados.catalogo=data||[];
+  renderCatalogo();
+}
+function renderCatalogo(){
+  const cats=['Todos',...new Set(dados.catalogo.map(p=>p.categoria).filter(Boolean))];
+  const lista=filtroCat==='Todos'?dados.catalogo:dados.catalogo.filter(p=>p.categoria===filtroCat);
+  const chips=cats.map(c=>`<button class="chip ${filtroCat===c?'active':''}" onclick="filtCat('${c}')">${c}</button>`).join('');
+  const SL={disponivel:'verde',reservado:'amber',vendido:'gray'};
+  const SN={disponivel:'Disponível',reservado:'Reservado',vendido:'Vendido'};
+  const cards=lista.length?lista.map(p=>`<div class="card">
+    <div style="display:flex;gap:12px">
+      <div style="font-size:32px;line-height:1;flex-shrink:0">${p.emoji||'📦'}</div>
+      <div style="flex:1">
+        <div style="font-weight:600;font-size:15px;margin-bottom:2px">${p.nome}</div>
+        ${p.preco?`<div style="font-size:16px;font-weight:600;color:#27500A;margin-bottom:4px">${moeda(p.preco)}</div>`:''}
+        <div style="font-size:12px;color:#888;margin-bottom:8px">${p.contatos?.nome||'Sem anunciante'}</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+          <span class="badge ${SL[p.status]||'gray'}">${SN[p.status]||p.status}</span>
+          ${p.status!=='vendido'?`
+            ${p.status==='disponivel'?`<button class="btn" style="font-size:11px;padding:4px 10px" onclick="updCat('${p.id}','reservado')">Reservar</button>`:''}
+            <button class="btn" style="font-size:11px;padding:4px 10px" onclick="updCat('${p.id}','vendido')">Vendido</button>
+          `:''}
+        </div>
+      </div>
+    </div>
+  </div>`).join(''):'<div class="empty">Nenhum produto</div>';
+  r('page-content',`<div class="chips">${chips}</div>${cards}<button class="fab" onclick="abrirFormCat()">+</button>`);
+}
+function filtCat(f){filtroCat=f;renderCatalogo();}
+async function updCat(id,status){await sb.from('catalogo').update({status}).eq('id',id);await loadCatalogo();}
+function abrirFormCat(){
+  const opts=dados.contatos.map(c=>`<option value="${c.id}">${c.nome}</option>`).join('');
+  modal=`<div class="overlay" onclick="fecharModal()"><div class="sheet" onclick="event.stopPropagation()">
+    <div class="sheet-handle"></div><div class="sheet-title">Novo produto</div>
+    <div class="form-group"><label class="form-label">Produto *</label><input class="form-input" id="fc-nome" placeholder="Ex: iPhone 14 Pro"></div>
+    <div class="form-group"><label class="form-label">Vendedor</label><select class="form-input form-select" id="fc-contato"><option value="">Sem vínculo</option>${opts}</select></div>
+    <div class="form-group"><label class="form-label">Preço (R$)</label><input class="form-input" id="fc-preco" type="number" placeholder="0,00"></div>
+    <div class="form-group"><label class="form-label">Categoria</label><select class="form-input form-select" id="fc-cat"><option value="">Selecione...</option><option>Eletrônico</option><option>Eletrodoméstico</option><option>Móveis</option><option>Veículo</option><option>Esporte</option><option>Outro</option></select></div>
+    <div class="form-group"><label class="form-label">Status</label><select class="form-input form-select" id="fc-status"><option value="disponivel">Disponível</option><option value="reservado">Reservado</option><option value="vendido">Vendido</option></select></div>
+    <button class="btn btn-primary btn-full" onclick="salvarCat()">Salvar</button>
+  </div></div>`;
+  app();
+}
+async function salvarCat(){
+  const nome=document.getElementById('fc-nome').value;
+  if(!nome.trim()) return;
+  await sb.from('catalogo').insert([{nome,contato_id:document.getElementById('fc-contato').value||null,preco:parseFloat(document.getElementById('fc-preco').value)||null,categoria:document.getElementById('fc-cat').value,status:document.getElementById('fc-status').value}]);
+  fecharModal(); await loadCatalogo();
+}
+
+// CONSULTOR
+async function loadConsultor(){
+  const {data}=await sb.from('consultor_negocios').select('*').order('created_at',{ascending:false});
+  dados.consultor=data||[];
+  renderConsultor();
+}
+function renderConsultor(){
+  const ativos=dados.consultor.filter(n=>n.status!=='fechado');
+  const comissao=ativos.reduce((a,n)=>a+(n.valor*(n.comissao_pct||3)/100),0);
+  const SL={negociando:'verde',proposta:'amber',fechado:'gray'};
+  const SN={negociando:'Negociando',proposta:'Proposta enviada',fechado:'Fechado'};
+  const cards=dados.consultor.length?dados.consultor.map(n=>{const com=n.valor*(n.comissao_pct||3)/100;return`<div class="card">
+    <div style="display:flex;gap:12px">
+      <div style="font-size:32px;line-height:1;flex-shrink:0">${n.emoji||'🤝'}</div>
+      <div style="flex:1">
+        <div style="font-weight:600;font-size:15px;margin-bottom:2px">${n.produto}</div>
+        <div style="font-size:12px;color:#888;margin-bottom:4px">${n.vendedor||'—'} → ${n.comprador||'Em aberto'}</div>
+        ${n.observacoes?`<div style="font-size:12px;color:#555;font-style:italic;margin-bottom:6px">"${n.observacoes}"</div>`:''}
+        <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:8px">
+          <span class="badge ${SL[n.status]}">${SN[n.status]}</span>
+          <span style="background:#EEEDFE;color:#3C3489;padding:3px 9px;border-radius:100px;font-size:11px;font-weight:600">Comissão: ${moeda(com)}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:15px;font-weight:600">${moeda(n.valor)}</span>
+          <div style="display:flex;gap:6px">
+            ${n.status==='negociando'?`<button class="btn" style="font-size:11px;padding:5px 10px" onclick="updConsultor('${n.id}','proposta')">Enviar proposta</button>`:''}
+            ${n.status==='proposta'?`<button class="btn btn-primary" style="font-size:11px;padding:5px 10px" onclick="updConsultor('${n.id}','fechado')">Fechar</button>`:''}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>`;}).join(''):'<div class="empty">Nenhum negócio cadastrado</div>';
+  const resumo=`<div class="metrics-grid" style="grid-template-columns:repeat(3,1fr)">
+    <div class="metric-card"><div class="metric-label">Em andamento</div><div class="metric-val purple">${ativos.length}</div></div>
+    <div class="metric-card"><div class="metric-label">Comissão prevista</div><div class="metric-val green" style="font-size:15px">${moeda(comissao)}</div></div>
+    <div class="metric-card"><div class="metric-label">Fechados</div><div class="metric-val">${dados.consultor.filter(n=>n.status==='fechado').length}</div></div>
+  </div>`;
+  r('page-content',`${resumo}${cards}<button class="fab" onclick="abrirFormConsultor()">+</button>`);
+}
+async function updConsultor(id,status){await sb.from('consultor_negocios').update({status}).eq('id',id);await loadConsultor();}
+function abrirFormConsultor(){
+  modal=`<div class="overlay" onclick="fecharModal()"><div class="sheet" onclick="event.stopPropagation()">
+    <div class="sheet-handle"></div><div class="sheet-title">Novo negócio</div>
+    <div class="form-group"><label class="form-label">Produto/Negócio *</label><input class="form-input" id="fn-prod" placeholder="Ex: Terreno 300m² Centro"></div>
+    <div class="form-group"><label class="form-label">Vendedor</label><input class="form-input" id="fn-vend" placeholder="Nome do vendedor"></div>
+    <div class="form-group"><label class="form-label">Comprador</label><input class="form-input" id="fn-comp" placeholder="Nome do comprador"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="form-group"><label class="form-label">Valor (R$)</label><input class="form-input" id="fn-val" type="number" placeholder="0"></div>
+      <div class="form-group"><label class="form-label">Comissão (%)</label><input class="form-input" id="fn-pct" type="number" placeholder="3" value="3"></div>
+    </div>
+    <div class="form-group"><label class="form-label">Observações</label><textarea class="form-input" id="fn-obs" rows="2" style="resize:none" placeholder="Situação atual..."></textarea></div>
+    <button class="btn btn-primary btn-full" onclick="salvarConsultor()">Salvar</button>
+  </div></div>`;
+  app();
+}
+async function salvarConsultor(){
+  const prod=document.getElementById('fn-prod').value;
+  if(!prod.trim()) return;
+  await sb.from('consultor_negocios').insert([{produto:prod,vendedor:document.getElementById('fn-vend').value,comprador:document.getElementById('fn-comp').value,valor:parseFloat(document.getElementById('fn-val').value)||0,comissao_pct:parseFloat(document.getElementById('fn-pct').value)||3,observacoes:document.getElementById('fn-obs').value}]);
+  fecharModal(); await loadConsultor();
+}
+
+// RECUPERAR
+async function loadRecuperar(){
+  const {data}=await sb.from('contatos').select('*').in('status',['inativo','lead']).order('updated_at');
+  dados.recuperar=data||[];
+  renderRecuperar();
+}
+function renderRecuperar(){
+  const MSGS={
+    sumiu:(n,p)=>`Oi ${n}! Tudo bem? Aqui é do Lagartense Mercadão 👋 Faz um tempo que você não anuncia conosco. Ainda tem produto para vender? Temos clientes procurando!`,
+    lead:(n)=>`Oi ${n}! Tudo bem? Aqui é do Lagartense Mercadão 👋 Você demonstrou interesse em anunciar. Posso te explicar como funciona rapidinho?`,
+    inativo:(n)=>`Oi ${n}! Tudo bem? Aqui é do Lagartense Mercadão 👋 Sentimos sua falta! Que tal anunciar novamente?`
+  };
+  const SL={inativo:'red',lead:'blue'};
+  const SN={inativo:'Inativo',lead:'Lead'};
+  const metrica=`<div class="metrics-grid"><div class="metric-card"><div class="metric-label">Para recuperar</div><div class="metric-val amber">${dados.recuperar.filter(c=>c.status==='inativo').length}</div></div><div class="metric-card"><div class="metric-label">Leads em aberto</div><div class="metric-val blue">${dados.recuperar.filter(c=>c.status==='lead').length}</div></div></div>`;
+  const cards=dados.recuperar.length?dados.recuperar.map(c=>`<div class="card">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
+      <div class="avatar" style="background:${corAv(c.nome).bg};color:${corAv(c.nome).txt}">${initials(c.nome)}</div>
+      <div style="flex:1"><div style="font-weight:600;font-size:15px">${c.nome}</div><div style="font-size:12px;color:#888">${c.categoria||''}</div></div>
+      <span class="badge ${SL[c.status]||'gray'}">${SN[c.status]||c.status}</span>
+    </div>
+    <div style="display:flex;justify-content:flex-end">
+      <button class="btn btn-primary" style="font-size:12px;padding:6px 14px" onclick="chamarRecuperar('${c.nome}','${c.status}','${c.telefone||''}')">Chamar no WhatsApp</button>
+    </div>
+  </div>`).join(''):'<div class="empty">Nenhum cliente para recuperar 🎉</div>';
+  r('page-content',`${metrica}${cards}`);
+}
+function chamarRecuperar(nome,status,tel){
+  const msgs={inativo:`Oi ${nome}! Tudo bem? Aqui é do Lagartense Mercadão 👋 Sentimos sua falta! Que tal anunciar novamente?`,lead:`Oi ${nome}! Tudo bem? Aqui é do Lagartense Mercadão 👋 Você demonstrou interesse em anunciar. Posso te explicar como funciona rapidinho?`};
+  const msg=msgs[status]||`Oi ${nome}! Tudo bem?`;
+  if(tel) window.open(`https://wa.me/55${tel.replace(/\D/g,'')}?text=${encodeURIComponent(msg)}`,'_blank');
+  else { navigator.clipboard?.writeText(msg); alert('Mensagem copiada:\n\n'+msg); }
+}
+
+// FINANCEIRO
+async function loadFinanceiro(){
+  const [r1,r2]=await Promise.all([
+    sb.from('resumo_financeiro').select('*').single(),
+    sb.from('transacoes').select('*').order('data_transacao',{ascending:false}).limit(30)
+  ]);
+  dados.resumo=r1.data||{};
+  dados.transacoes=r2.data||[];
+  renderFinanceiro();
+}
+function renderFinanceiro(){
+  const res=dados.resumo;
+  const TIPOS={anuncio:'verde',comissao:'purple',super_ofertas:'blue',outro:'gray'};
+  const TN={anuncio:'Anúncio',comissao:'Comissão',super_ofertas:'Super Ofertas',outro:'Outro'};
+  const pendentes=dados.transacoes.filter(t=>t.status==='pendente');
+  const recebidas=dados.transacoes.filter(t=>t.status==='recebido');
+  const resumoHtml=`<div style="background:#0a0a0a;border-radius:14px;padding:16px;margin-bottom:14px">
+    <div style="font-size:11px;color:#555;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Receita do mês</div>
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:40px;color:#7DCC48;line-height:1;margin-bottom:12px">${moeda(res.total_recebido||0)}</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+      ${[['Anúncios',res.total_anuncios,'#97F259'],['Comissões',res.total_comissoes,'#AFA9EC'],['Super Ofertas',res.total_super,'#85B7EB']].map(([l,v,c])=>`<div style="background:#141414;border-radius:10px;padding:10px"><div style="font-size:10px;color:#555;margin-bottom:3px;text-transform:uppercase">${l}</div><div style="font-size:14px;font-weight:600;color:${c}">${moeda(v||0)}</div></div>`).join('')}
+    </div>
+  </div>`;
+  const pendHtml=pendentes.length?`<div class="section-title">A receber</div>${pendentes.map(t=>`<div class="card" style="border-left:3px solid #EF9F27;border-radius:0 12px 12px 0"><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:600;font-size:14px">${t.descricao}</div><div style="font-size:12px;color:#888">${t.data_transacao} · <span class="badge ${TIPOS[t.tipo]||'gray'}" style="font-size:10px">${TN[t.tipo]||t.tipo}</span></div></div><div style="font-size:16px;font-weight:600;color:#854F0B">${moeda(t.valor)}</div></div></div>`).join('')}`:'';
+  const histHtml=recebidas.length?`<div class="section-title">Histórico do mês</div>${recebidas.map(t=>`<div class="card"><div style="display:flex;justify-content:space-between;align-items:center"><div style="flex:1;min-width:0"><div style="font-weight:600;font-size:14px;margin-bottom:2px">${t.descricao}</div><div style="font-size:12px;color:#888">${t.data_transacao} · <span class="badge ${TIPOS[t.tipo]||'gray'}" style="font-size:10px">${TN[t.tipo]||t.tipo}</span></div></div><div style="font-size:16px;font-weight:600;color:#27500A;flex-shrink:0;margin-left:12px">${moeda(t.valor)}</div></div></div>`).join('')}`:'<div class="empty">Nenhuma transação ainda</div>';
+  r('page-content',`${resumoHtml}${pendHtml}${histHtml}<button class="fab" onclick="abrirFormFin()">+</button>`);
+}
+function abrirFormFin(){
+  modal=`<div class="overlay" onclick="fecharModal()"><div class="sheet" onclick="event.stopPropagation()">
+    <div class="sheet-handle"></div><div class="sheet-title">Nova transação</div>
+    <div class="form-group"><label class="form-label">Tipo</label><select class="form-input form-select" id="ff-tipo"><option value="anuncio">Anúncio R$15</option><option value="comissao">Comissão consultor</option><option value="super_ofertas">Super Ofertas</option><option value="outro">Outro</option></select></div>
+    <div class="form-group"><label class="form-label">Descrição *</label><input class="form-input" id="ff-desc" placeholder="Ex: Anúncio Carlos Silva — Moto Fan"></div>
+    <div class="form-group"><label class="form-label">Valor (R$) *</label><input class="form-input" id="ff-val" type="number" step="0.01" placeholder="15.00"></div>
+    <div class="form-group"><label class="form-label">Status</label><select class="form-input form-select" id="ff-status"><option value="recebido">Recebido</option><option value="pendente">Pendente (a receber)</option></select></div>
+    <div class="form-group"><label class="form-label">Data</label><input class="form-input" id="ff-data" type="date" value="${new Date().toISOString().split('T')[0]}"></div>
+    <button class="btn btn-primary btn-full" onclick="salvarFin()">Salvar</button>
+  </div></div>`;
+  app();
+}
+async function salvarFin(){
+  const desc=document.getElementById('ff-desc').value;
+  if(!desc.trim()) return;
+  await sb.from('transacoes').insert([{descricao:desc,tipo:document.getElementById('ff-tipo').value,valor:parseFloat(document.getElementById('ff-val').value),status:document.getElementById('ff-status').value,data_transacao:document.getElementById('ff-data').value}]);
+  fecharModal(); await loadFinanceiro();
+}
+
+// MODAL
+function fecharModal(){modal=null;app();loadPage();}
+function bindEvents(){}
+
+// ===== AUTH =====
+sb.auth.onAuthStateChange(async(_,session)=>{
+  user=session?.user||null;
+  app();
+  if(user) {
+    // Carregar contatos antes das páginas que dependem deles
+    const {data}=await sb.from('contatos').select('*').order('created_at',{ascending:false});
+    dados.contatos=data||[];
+    await loadPage();
+  }
+});
+sb.auth.getSession().then(({data:{session}})=>{
+  user=session?.user||null;
+  app();
+  if(user) loadPage();
+});
+</script>
+</body>
+</html>
